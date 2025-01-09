@@ -1,56 +1,139 @@
 import streamlit as st
-from openai import OpenAI
+from PIL import Image
+import pytesseract
+import pandas as pd
+import openai
+import os
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
-# Show title and description.
-st.title("💬 Chatbot")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
-)
+# Set API Keys and Paths
+openai.api_key = "your_openai_api_key"
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+# Google Sheets Setup
+def connect_to_google_sheets(sheet_name):
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    client = gspread.authorize(creds)
+    return client.open(sheet_name).sheet1
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+def save_to_google_sheets(sheet, dataframe):
+    rows = dataframe.values.tolist()
+    for row in rows:
+        sheet.append_row(row)
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# Sidebar Navigation
+st.sidebar.title("Navigation")
+views = ["Upload Data", "Daily Astrology", "Deep Dive + Chat"]
+selected_view = st.sidebar.radio("Go to", views)
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# **View 1: Upload Data**
+if selected_view == "Upload Data":
+    st.title("Upload Sleep Data")
+    st.write("Upload sleep data images or CSV files for analysis and storage.")
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+    uploaded_file = st.file_uploader("Upload your Sleep Data (Image or CSV)", type=["png", "jpg", "jpeg", "csv"])
+    if uploaded_file:
+        if uploaded_file.name.endswith(".csv"):
+            # Handle CSV
+            uploaded_data = pd.read_csv(uploaded_file)
+            st.write("Uploaded Data:")
+            st.dataframe(uploaded_data)
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+            # Save to Google Sheets
+            sheet_name = "Sleep Data"  # Replace with your Google Sheet name
+            sheet = connect_to_google_sheets(sheet_name)
+            if st.button("Save to Google Sheets"):
+                save_to_google_sheets(sheet, uploaded_data)
+                st.success("Data saved to Google Sheets!")
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
+        else:
+            # Handle Image
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Uploaded Image", use_column_width=True)
+
+            # Extract text from the image
+            text = pytesseract.image_to_string(image)
+            st.write("Extracted Text:")
+            st.text(text)
+
+            # Save extracted text to Google Sheets
+            if st.button("Save Image Data to Google Sheets"):
+                sheet_name = "Sleep Data"  # Replace with your Google Sheet name
+                sheet = connect_to_google_sheets(sheet_name)
+                data_point = {"Raw Data": text}
+                df = pd.DataFrame([data_point])
+                save_to_google_sheets(sheet, df)
+                st.success("Extracted data saved to Google Sheets!")
+
+# **View 2: Daily Astrology**
+elif selected_view == "Daily Astrology":
+    st.title("Your Daily Astrology")
+    st.write("Personalized insights for your day based on your data!")
+
+    # Fetch data from Google Sheets
+    sheet_name = "Sleep Data"  # Replace with your Google Sheet name
+    sheet = connect_to_google_sheets(sheet_name)
+    rows = sheet.get_all_records()
+    if rows:
+        central_data = pd.DataFrame(rows)
+
+        # Generate personalized insights using OpenAI
+        insights_prompt = f"""
+        Using the following sleep data, generate a fun and personalized "daily astrology" insight:
+        {central_data.tail(5).to_string(index=False)}
+        """
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": insights_prompt}],
         )
+        astrology_insight = response['choices'][0]['message']['content']
+        st.write("✨ Your Daily Insight ✨")
+        st.text(astrology_insight)
+    else:
+        st.warning("No data found. Upload your data in the 'Upload Data' section.")
 
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+# **View 3: Deep Dive + Chat**
+elif selected_view == "Deep Dive + Chat":
+    st.title("Deep Dive Analysis")
+    st.write("Analyze your aggregated data and interact with the AI assistant.")
+
+    # Fetch data from Google Sheets
+    sheet_name = "Sleep Data"  # Replace with your Google Sheet name
+    sheet = connect_to_google_sheets(sheet_name)
+    rows = sheet.get_all_records()
+    if rows:
+        central_data = pd.DataFrame(rows)
+
+        # Show aggregated data
+        st.write("### Aggregated Data")
+        st.dataframe(central_data)
+
+        # Generate detailed analysis using OpenAI
+        analysis_prompt = f"""
+        Provide an in-depth analysis of the following sleep data. Include trends, suggestions, and areas for improvement:
+        {central_data.to_string(index=False)}
+        """
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": analysis_prompt}],
+        )
+        detailed_analysis = response['choices'][0]['message']['content']
+        st.write("### AI Analysis")
+        st.text(detailed_analysis)
+
+        # Chat Feature
+        st.write("### Chat with AI Assistant")
+        user_input = st.text_input("Ask a question about your data, supplements, or workouts:")
+        if user_input:
+            chat_response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are an expert health assistant."},
+                    {"role": "user", "content": user_input},
+                ],
+            )
+            st.text(chat_response['choices'][0]['message']['content'])
+    else:
+        st.warning("No data found. Upload your data in the 'Upload Data' section.")
