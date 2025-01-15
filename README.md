@@ -20,6 +20,7 @@ A simple Streamlit app that shows how to build a chatbot using OpenAI's GPT-3.5.
 
 TODO LIST:
 - analyze charts and graphs from images
+- fix google credentials to be in streamlit
 - save daily horoscope
 - add data
 - test data analysis 
