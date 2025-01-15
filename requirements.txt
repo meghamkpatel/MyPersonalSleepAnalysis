@@ -1,6 +1,9 @@
 streamlit
-pillow
+Pillow
 matplotlib
 pytesseract
 pandas
 openai
+gspread
+google-auth
+google-auth-oauthlib
