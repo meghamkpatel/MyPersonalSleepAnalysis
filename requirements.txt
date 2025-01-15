@@ -7,4 +7,4 @@ openai
 gspread
 google-auth
 google-auth-oauthlib
-pyheif
+pillow_heif
