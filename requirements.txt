@@ -1,2 +1,6 @@
 streamlit
+pillow
+matplotlib
+pytesseract
+pandas
 openai

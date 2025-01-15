@@ -11,13 +11,24 @@ import re
 
 # Set API Keys and Paths
 openai_api_key = st.secrets["general"]["openai_api_key"]
-credentials_path = st.secrets["general"]["google_sheet_credentials"]
+gcs_credentials = {
+    "type": "service_account",
+    "project_id": st.secrets["gcs"]["project_id"],
+    "private_key_id": st.secrets["gcs"]["private_key_id"],
+    "private_key": st.secrets["gcs"]["private_key"].replace('\\n', '\n'),
+    "client_email": st.secrets["gcs"]["client_email"],
+    "client_id": st.secrets["gcs"]["client_id"],
+    "auth_uri": st.secrets["gcs"]["auth_uri"],
+    "token_uri": st.secrets["gcs"]["token_uri"],
+    "auth_provider_x509_cert_url": st.secrets["gcs"]["auth_provider_x509_cert_url"],
+    "client_x509_cert_url": st.secrets["gcs"]["client_x509_cert_url"]
+}
 openai_client = openai.OpenAI(api_key=openai_api_key)
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Google Sheets Setup
 SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-CREDS = Credentials.from_service_account_file(credentials_path, scopes=SCOPE)
+CREDS = Credentials.from_service_account_info(gcs_credentials, scopes=SCOPE)
 gc = gspread.authorize(CREDS)
 
 def connect_to_google_sheets(sheet_name):
