@@ -31,8 +31,8 @@ gcs_credentials = {
 openai_client = openai.OpenAI(api_key=openai_api_key)
 
 # Set the Tesseract path
-if os.getenv("TESSERACT_PATH"):  # Use custom environment variable if set
-    pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH")
+if st.secrets("TESSERACT_PATH"):  # Use custom environment variable if set
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 else:  # Default path (local system)
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
