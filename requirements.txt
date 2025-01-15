@@ -2,8 +2,6 @@ streamlit
 Pillow
 matplotlib
 pytesseract
-tesseract-ocr
-tesseract
 pandas
 openai
 gspread
