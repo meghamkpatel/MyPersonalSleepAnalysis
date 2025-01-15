@@ -9,6 +9,7 @@ from pillow_heif import register_heif_opener
 from google.oauth2.service_account import Credentials
 import json
 import re
+import os
 
 # Register HEIF opener for PIL
 register_heif_opener()
@@ -28,7 +29,12 @@ gcs_credentials = {
     "client_x509_cert_url": st.secrets["gcs"]["client_x509_cert_url"]
 }
 openai_client = openai.OpenAI(api_key=openai_api_key)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+# Set the Tesseract path
+if os.getenv("TESSERACT_PATH"):  # Use custom environment variable if set
+    pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH")
+else:  # Default path (local system)
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # Google Sheets Setup
 SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
