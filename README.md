@@ -17,3 +17,11 @@ A simple Streamlit app that shows how to build a chatbot using OpenAI's GPT-3.5.
    ```
    $ streamlit run streamlit_app.py
    ```
+
+TODO LIST:
+- analyze charts and graphs from images
+- save daily horoscope
+- add data
+- test data analysis 
+- add emojis and aesthetic colors
+- incorporate actual astrology
