@@ -5,9 +5,13 @@ import pytesseract
 import pandas as pd
 import openai
 import gspread
+from pillow_heif import register_heif_opener
 from google.oauth2.service_account import Credentials
 import json
 import re
+
+# Register HEIF opener for PIL
+register_heif_opener()
 
 # Set API Keys and Paths
 openai_api_key = st.secrets["general"]["openai_api_key"]
@@ -286,7 +290,7 @@ if selected_view == "Upload Data":
     st.title("Upload Sleep Data")
     st.write("Upload sleep data images for analysis and storage.")
 
-    uploaded_file = st.file_uploader("Upload your Sleep Data From Last Night", type=["png", "jpg", "jpeg"])
+    uploaded_file = st.file_uploader("Upload your Sleep Data From Last Night", type=["png", "jpg", "jpeg", "heic"])
     if uploaded_file:
         sheet_name = "MeghaPatel"  # Replace with your Google Sheet name
         sheet = connect_to_google_sheets(sheet_name)
