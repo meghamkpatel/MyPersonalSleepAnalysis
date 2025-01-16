@@ -10,10 +10,6 @@ from google.oauth2.service_account import Credentials
 import json
 import re
 import base64
-from transformers import pipeline
-
-# Initialize the model for text generation
-text_generator = pipeline("text-generation", model="distilgpt2")
 
 # Register HEIF opener for PIL
 register_heif_opener()
