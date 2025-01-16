@@ -1,0 +1,252 @@
+[
+    {
+        "filename": "chartschart_0.png",
+        "charts": [
+            {
+                "text": "",
+                "dimensions": [
+                    34,
+                    130,
+                    538,
+                    106
+                ],
+                "type": "Unknown"
+            },
+            {
+                "text": "Sleep continuity >\n\nGoal achieved 0 of 7 days\n\nm\u2122eeeeee @\nQ@ee2ee eee\n\n9 10 11 12 13 14 15",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    296
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    },
+    {
+        "filename": "chartschart_1.png",
+        "charts": [
+            {
+                "text": "Average HRV 40 ms\n\n01:05 09:41",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    369
+                ],
+                "type": "HRV"
+            }
+        ]
+    },
+    {
+        "filename": "chartschart_2.png",
+        "charts": [
+            {
+                "text": "Average blood oxygen 98 %",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    369
+                ],
+                "type": "Blood Oxygen"
+            }
+        ]
+    },
+    {
+        "filename": "chartschart_3.png",
+        "charts": [
+            {
+                "text": "",
+                "dimensions": [
+                    234,
+                    218,
+                    288,
+                    68
+                ],
+                "type": "Unknown"
+            },
+            {
+                "text": "Average heart rate 62 bpm\n\n01:05 09:41",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    369
+                ],
+                "type": "Heart Rate"
+            }
+        ]
+    },
+    {
+        "filename": "chartschart_4.png",
+        "charts": [
+            {
+                "text": "Sleep Summary\n\nSleep duration 08H 36M\n\u2014\u2014\n\nDuration to fall asleep 07M\n\u2014EE",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    256
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    },
+    {
+        "filename": "chartschart_5.png",
+        "charts": [
+            {
+                "text": "Total awake time 49 M 9%\n\nREM duration 01H 14 M 14%\n\nTotal light sleep duration 05 H 02 M 59%\n\nTotal deep sleep duration 01H 31M 18%",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    375
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    },
+    {
+        "filename": "chartschart_6.png",
+        "charts": [
+            {
+                "text": "Total Duration x\n96\n81 36m Soa\n08:37-09:26\n\n4 100% a Excellent\n\nSleep Quality\n\nLight sleep 49 M\n\n@ Wake up @ Light sleep\n\natte",
+                "dimensions": [
+                    1,
+                    1,
+                    605,
+                    681
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    },
+    {
+        "filename": "chart_0.png",
+        "charts": [
+            {
+                "text": "",
+                "dimensions": [
+                    34,
+                    130,
+                    538,
+                    106
+                ],
+                "type": "Unknown"
+            },
+            {
+                "text": "Sleep continuity >\n\nGoal achieved 0 of 7 days\n\nm\u2122eeeeee @\nQ@ee2ee eee\n\n9 10 11 12 13 14 15",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    296
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    },
+    {
+        "filename": "chart_1.png",
+        "charts": [
+            {
+                "text": "Average HRV 40 ms\n\n01:05 09:41",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    369
+                ],
+                "type": "HRV"
+            }
+        ]
+    },
+    {
+        "filename": "chart_2.png",
+        "charts": [
+            {
+                "text": "Average blood oxygen 98 %",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    369
+                ],
+                "type": "Blood Oxygen"
+            }
+        ]
+    },
+    {
+        "filename": "chart_3.png",
+        "charts": [
+            {
+                "text": "",
+                "dimensions": [
+                    234,
+                    218,
+                    288,
+                    68
+                ],
+                "type": "Unknown"
+            },
+            {
+                "text": "Average heart rate 62 bpm\n\n01:05 09:41",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    369
+                ],
+                "type": "Heart Rate"
+            }
+        ]
+    },
+    {
+        "filename": "chart_4.png",
+        "charts": [
+            {
+                "text": "Sleep Summary\n\nSleep duration 08H 36M\n\u2014\u2014\n\nDuration to fall asleep 07M\n\u2014EE",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    256
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    },
+    {
+        "filename": "chart_5.png",
+        "charts": [
+            {
+                "text": "Total awake time 49 M 9%\n\nREM duration 01H 14 M 14%\n\nTotal light sleep duration 05 H 02 M 59%\n\nTotal deep sleep duration 01H 31M 18%",
+                "dimensions": [
+                    0,
+                    0,
+                    607,
+                    375
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    },
+    {
+        "filename": "chart_6.png",
+        "charts": [
+            {
+                "text": "Total Duration x\n96\n81 36m Soa\n08:37-09:26\n\n4 100% a Excellent\n\nSleep Quality\n\nLight sleep 49 M\n\n@ Wake up @ Light sleep\n\natte",
+                "dimensions": [
+                    1,
+                    1,
+                    605,
+                    681
+                ],
+                "type": "Sleep Stages"
+            }
+        ]
+    }
+]

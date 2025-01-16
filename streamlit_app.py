@@ -9,7 +9,7 @@ from pillow_heif import register_heif_opener
 from google.oauth2.service_account import Credentials
 import json
 import re
-import os
+import base64
 
 # Register HEIF opener for PIL
 register_heif_opener()
@@ -32,7 +32,7 @@ openai_client = openai.OpenAI(api_key=openai_api_key)
 
 # Set the Tesseract path
 if st.secrets["environment"]["TESSERACT_PATH"]:  # Use custom environment variable if set
-    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+    pytesseract.pytesseract.tesseract_cmd = st.secrets["environment"]["TESSERACT_PATH"]
 else:  # Default path (local system)
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -149,7 +149,7 @@ def use_gpt_for_parsing(text):
     """
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
         )
         structured_data = response.choices[0].message.content.strip()
@@ -174,117 +174,34 @@ def use_gpt_for_parsing(text):
         st.error(f"Error during GPT parsing: {e}")
         return None
 
-def generate_sleep_summary(data_row):
-    """
-    Generate a sleep summary for the day based on the submitted sleep data.
-    """
-    # Extract relevant fields
-    date = data_row.get("Date", "N/A")
-    total_duration = data_row.get("Total Duration", "N/A")
-    sleep_score = data_row.get("Sleep Score", "N/A")
-    sleep_efficiency = data_row.get("Sleep Efficiency", "N/A")
-    sleep_quality = data_row.get("Sleep Quality", "N/A")
-    rem_duration = data_row.get("REM Duration", "N/A")
-    deep_sleep = data_row.get("Deep Sleep Duration", "N/A")
-    avg_hr = data_row.get("Average Heart Rate", "N/A")
-    avg_spo2 = data_row.get("Average Blood Oxygen", "N/A")
-    avg_hrv = data_row.get("Average HRV", "N/A")
+def extract_sleep_data(image_path):
+    """Extracts and organizes sleep data for analysis."""
+    # Convert image to base64
+    uploaded_file.seek(0)  # Reset file pointer to the start
+    img_base64 = base64.b64encode(image_path.read()).decode("utf-8")
 
-    # GPT prompt for generating the summary
-    prompt = f"""
-    Based on the following sleep data:
-    - Date: {date}
-    - Total Duration: {total_duration}
-    - Sleep Score: {sleep_score}
-    - Sleep Efficiency: {sleep_efficiency}
-    - Sleep Quality: {sleep_quality}
-    - REM Duration: {rem_duration}
-    - Deep Sleep Duration: {deep_sleep}
-    - Average Heart Rate: {avg_hr}
-    - Average Blood Oxygen: {avg_spo2}
-    - Average HRV: {avg_hrv}
+    # Prepare the prompt with base64 image content
+    prompt = [
+        {
+            "type": "text",
+            "text": "Provide a detailed analysis and insights based on the data, including:    1. Overall Sleep Summary (highlight patterns, quality, and anomalies).2. Efficiency and Quality (compare to recommended standards).    3. Blood Oxygen Trends (indicate concerns like dips or stability).    4. HRV Trends (highlight possible stress or recovery insights).    5. Heart Rate Trends (include any noteworthy patterns or changes).    6. Sleep Stage Trends and Comparison (identify balance among stages).    7. Correlations of Blood Oxygen, HRV, and Heart Rate over time. Provide actionable recommendations for improvement where applicable."
+        },
+        {
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}
+        }
+    ]
 
-    Write a friendly and insightful summary about the user's sleep. Include any patterns, potential improvements, or highlights, such as excellent REM sleep or low blood oxygen levels.
-    """
+    # Send request to OpenAI API
+    response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1500
+    )
 
-    try:
-        response = openai_client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        st.error(f"Error generating sleep summary: {e}")
-        return None
-
-def analyze_sleep_cycles(sleep_data):
-    """
-    Analyze sleep cycle data, visualize it, and provide insights.
-    Parameters:
-    - sleep_data (pd.DataFrame): Dataframe containing sleep stages, time, and heart rate.
-    """
-    # Check for required columns
-    required_columns = ["time", "stage", "heart_rate"]
-    for column in required_columns:
-        if column not in sleep_data.columns:
-            raise ValueError(f"Missing required column: {column}")
-
-    # Sort data by time
-    sleep_data["time"] = pd.to_datetime(sleep_data["time"], format="%H:%M")
-    sleep_data = sleep_data.sort_values(by="time")
-
-    # Plot sleep stages and heart rate
-    fig, ax1 = plt.subplots(figsize=(12, 6))
-    stages = sleep_data["stage"].map({"Awake": 3, "Light": 2, "Deep": 1, "REM": 0})
-    ax1.plot(sleep_data["time"], stages, label="Sleep Stages", color="blue", marker="o")
-    ax1.set_ylabel("Sleep Stages (0=REM, 1=Deep, 2=Light, 3=Awake)", color="blue")
-    ax1.set_xlabel("Time")
-    ax1.set_yticks([0, 1, 2, 3])
-    ax1.set_yticklabels(["REM", "Deep", "Light", "Awake"])
-    ax1.tick_params(axis="y", colors="blue")
-    ax1.grid(axis="x")
-
-    ax2 = ax1.twinx()
-    ax2.plot(sleep_data["time"], sleep_data["heart_rate"], label="Heart Rate", color="red", linestyle="--")
-    ax2.set_ylabel("Heart Rate (bpm)", color="red")
-    ax2.tick_params(axis="y", colors="red")
-
-    fig.suptitle("Sleep Stages and Heart Rate", fontsize=16)
-    ax1.legend(loc="upper left")
-    ax2.legend(loc="upper right")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    st.pyplot(fig)
-
-    # Generate insights
-    longest_stage = sleep_data["stage"].value_counts().idxmax()
-    lowest_hr_stage = sleep_data.loc[sleep_data["heart_rate"].idxmin(), "stage"]
-    insights = f"""
-    Sleep Analysis Insights:
-    - Longest sleep stage: {longest_stage}
-    - Stage with lowest heart rate: {lowest_hr_stage}
-    - Average heart rate: {sleep_data['heart_rate'].mean():.2f} bpm
-    """
-    return insights
-
-# New: Extract structured sleep data from image
-def extract_structured_data_from_image(image):
-    """Extract structured sleep data from OCR."""
-    data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
-    times, stages, heart_rates = [], [], []
-
-    for i, text in enumerate(data['text']):
-        if text in ["Awake", "Light", "Deep", "REM"]:
-            times.append(data['text'][i - 1])  # Assume time is the previous word
-            stages.append(text)
-            hr_candidates = data['text'][i + 1:i + 3]
-            hr_value = next((val for val in hr_candidates if val.isdigit()), None)
-            heart_rates.append(int(hr_value) if hr_value else None)
-
-    # Create a DataFrame
-    sleep_data = pd.DataFrame({"time": times, "stage": stages, "heart_rate": heart_rates})
-    sleep_data["time"] = pd.to_datetime(sleep_data["time"], format="%H:%M", errors="coerce")
-    return sleep_data.dropna().reset_index(drop=True)
+    return response.choices[0].message.content.strip()
 
 # Sidebar Navigation
 st.sidebar.title("Navigation")
@@ -323,28 +240,16 @@ if selected_view == "Upload Data":
         
         # Usage in the app
         if selected_view == "Upload Data" and gpt_parsed_df is not None:
-            # Extract sleep data from the image
-            sleep_data = extract_structured_data_from_image(image)
-
-            if not sleep_data.empty:
-                st.write("### Extracted Sleep Data")
-                st.dataframe(sleep_data)
-
-                # Analyze sleep cycles
-                st.write("### Sleep Cycle Analysis")
-                try:
-                    insights = analyze_sleep_cycles(sleep_data)
-                    st.text(insights)
-                except ValueError as e:
-                    st.error(f"Error analyzing sleep data: {e}")
-            else:
-                st.error("No valid sleep data could be extracted from the image.")
-                    # Generate and display sleep summary
-            st.write("### Daily Sleep Summary")
-            summary = generate_sleep_summary(gpt_parsed_df.iloc[0].to_dict())
-            if summary:
-                st.text(summary)
-
+            # Analyze sleep cycles
+            st.write("### Sleep Cycle Analysis")
+            try:
+                insights = extract_sleep_data(uploaded_file)
+                st.markdown(insights)
+            except ValueError as e:
+                st.error(f"Error analyzing sleep data: {e}")
+        else:
+            st.error("No valid sleep data could be extracted from the image.")
+                    
 # **View 2: Daily Astrology**
 elif selected_view == "Daily Astrology":
     st.title("Your Daily Astrology")
@@ -370,7 +275,7 @@ elif selected_view == "Daily Astrology":
                 )
                 astrology_insight = response.choices[0].message.content
                 st.write("\u2728 Your Daily Insight \u2728")
-                st.text(astrology_insight)
+                st.markdown(astrology_insight)
             else:
                 st.warning("No data found. Upload your data in the 'Upload Data' section.")
         except Exception as e:

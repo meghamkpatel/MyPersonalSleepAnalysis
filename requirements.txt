@@ -5,6 +5,6 @@ pytesseract
 pandas
 openai
 gspread
+pillow-heif
 google-auth
 google-auth-oauthlib
-pillow_heif
